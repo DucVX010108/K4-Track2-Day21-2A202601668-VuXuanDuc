@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - 'data/**.dvc'
-      - 'data/**.csv'
       - 'src/**.py'
       - 'params.yaml'
   workflow_dispatch:
@@ -59,17 +58,25 @@ jobs:
           if [ -n "${{ secrets.STORAGE_CREDENTIALS }}" ] && [ "${{ secrets.STORAGE_CREDENTIALS }}" != "{}" ]; then
             echo '${{ secrets.STORAGE_CREDENTIALS }}' > /tmp/sa-key.json
             echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa-key.json" >> $GITHUB_ENV
-          else
-            echo "No service account key provided, bypassing cloud auth."
           fi
 
       - name: Pull data with DVC
         run: |
-          if [ -f "/tmp/sa-key.json" ]; then
-            dvc pull data/train_batch1.csv.dvc data/holdout.csv.dvc || true
-          else
-            echo "Using tracked CSV datasets directly."
-          fi
+          python - <<'PYEOF'
+          import os, urllib.request, yaml
+          os.makedirs("data", exist_ok=True)
+          for dvc_file in ["data/train_batch1.csv.dvc", "data/holdout.csv.dvc"]:
+              if os.path.exists(dvc_file):
+                  with open(dvc_file) as f:
+                      meta = yaml.safe_load(f)
+                  out = meta["outs"][0]
+                  md5 = out["md5"]
+                  csv_path = os.path.join(os.path.dirname(dvc_file), out["path"])
+                  url = f"https://storage.googleapis.com/track2-d21-2a202601668/dvc/files/md5/{md5[:2]}/{md5[2:]}"
+                  print(f"Pulling {csv_path} from DVC remote storage ({url})...")
+                  urllib.request.urlretrieve(url, csv_path)
+                  print(f"Successfully pulled {csv_path} ({os.path.getsize(csv_path)} bytes)")
+          PYEOF
 
       - name: Train model
         run: python src/train.py
@@ -98,8 +105,14 @@ jobs:
               except Exception as e:
                   print(f"Warning: Cloud Storage upload skipped: {e}")
           else:
-              print("Cloud credentials not provided, model saved as workflow artifact.")
+              print("Model saved for release job deployment.")
           PYEOF
+
+      - name: Save model as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: model
+          path: models/model.joblib
 
       - name: Save report as artifact
         uses: actions/upload-artifact@v4
@@ -136,6 +149,21 @@ jobs:
     needs: quality-gate
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: model
+          path: models
+
+      - name: Copy new model to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "models/model.joblib"
+          target: "/home/${{ secrets.SERVER_USER }}/models/"
+          strip_components: 1
+
       - name: SSH deploy to VM
         uses: appleboy/ssh-action@v1.0.3
         with:
