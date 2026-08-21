@@ -1,0 +1,15 @@
+artifact_uri: mlruns/0/d6d575963b7942e08d635b1490a067a7/artifacts
+end_time: 1787319389391
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d6d575963b7942e08d635b1490a067a7
+run_name: brawny-bat-629
+run_uuid: d6d575963b7942e08d635b1490a067a7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1787319376309
+status: 3
+tags: []
+user_id: vuxua

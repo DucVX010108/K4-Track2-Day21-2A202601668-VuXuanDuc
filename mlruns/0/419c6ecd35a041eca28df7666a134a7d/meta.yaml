@@ -1,0 +1,15 @@
+artifact_uri: mlruns/0/419c6ecd35a041eca28df7666a134a7d/artifacts
+end_time: 1787319394980
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 419c6ecd35a041eca28df7666a134a7d
+run_name: debonair-mare-637
+run_uuid: 419c6ecd35a041eca28df7666a134a7d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1787319389460
+status: 3
+tags: []
+user_id: vuxua
