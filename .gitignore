@@ -11,3 +11,6 @@ sa-key.json
 __pycache__/
 *.pyc
 .DS_Store
+
+!data/train_batch1.csv
+!data/holdout.csv
