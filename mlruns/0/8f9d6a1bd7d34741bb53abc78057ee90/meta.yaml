@@ -1,0 +1,15 @@
+artifact_uri: mlruns/0/8f9d6a1bd7d34741bb53abc78057ee90/artifacts
+end_time: 1787310449226
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 8f9d6a1bd7d34741bb53abc78057ee90
+run_name: casual-panda-846
+run_uuid: 8f9d6a1bd7d34741bb53abc78057ee90
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1787310444870
+status: 3
+tags: []
+user_id: vuxua
